@@ -16,11 +16,11 @@ A Python application that monitors index funds (S&P 500, Vanguard Growth, etc.) 
   - VGT (Vanguard Information Technology ETF)
 
 ## Tech Stack 
-Python Flask 
-Pandas 
-SMTP 
-HTML/CSS
-Bootstrap
+- Python Flask
+- Pandas
+- SMTP
+- HTML/CSS
+- Bootstrap
 
 ## Setup
 
