@@ -15,6 +15,13 @@ A Python application that monitors index funds (S&P 500, Vanguard Growth, etc.) 
   - VOOG (Vanguard S&P 500 Growth ETF)
   - VGT (Vanguard Information Technology ETF)
 
+## Tech Stack 
+Python Flask 
+Pandas 
+SMTP 
+HTML/CSS
+Bootstrap
+
 ## Setup
 
 1. **Install dependencies**:
