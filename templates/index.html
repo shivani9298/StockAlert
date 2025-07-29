@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Stock Alert System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>System Status
+                </h5>
+                <div>
+                    <span class="badge bg-{{ 'success' if monitoring_active else 'danger' }} me-2">
+                        <i class="fas fa-circle me-1"></i>
+                        {{ 'Active' if monitoring_active else 'Inactive' }}
+                    </span>
+                    <button id="toggleBtn" class="btn btn-{{ 'danger' if monitoring_active else 'success' }} btn-sm">
+                        <i class="fas fa-{{ 'stop' if monitoring_active else 'play' }} me-1"></i>
+                        {{ 'Stop' if monitoring_active else 'Start' }} Monitoring
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Last Check:</h6>
+                        <p id="lastCheck" class="text-muted">
+                            {{ last_check_time.strftime('%Y-%m-%d %H:%M:%S') if last_check_time else 'Never' }}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Stocks Monitored:</h6>
+                        <p class="text-muted">SPY, VOO, VTI, VUG, VOOG, VGT</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Actions:</h6>
+                        <button id="testBtn" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-vial me-1"></i>Test Alert
+                        </button>
+                        <button id="summaryBtn" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-envelope me-1"></i>Send Summary
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Latest Market Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="stockData" class="row">
+                    {% if analyses %}
+                        {% for symbol, analysis in analyses.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card stock-card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ symbol }}</h6>
+                                    <p class="card-text">
+                                        <strong>${{ "%.2f"|format(analysis.current_price) }}</strong>
+                                        <span class="badge bg-{{ 'success' if analysis.change_percent >= 0 else 'danger' }} ms-2">
+                                            {{ "%+.2f"|format(analysis.change_percent) }}%
+                                        </span>
+                                    </p>
+                                    <p class="signal-{{ analysis.signal.lower() }}">
+                                        <i class="fas fa-{{ 'arrow-up' if analysis.signal == 'BUY' else 'arrow-down' if analysis.signal == 'SELL' else 'minus' }} me-1"></i>
+                                        {{ analysis.signal }} ({{ analysis.confidence }})
+                                    </p>
+                                    {% if analysis.reasons %}
+                                    <small class="text-muted">
+                                        {{ analysis.reasons[0] }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                <p>No market data available. Start monitoring or run a test to see results.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Alert Thresholds
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-arrow-down text-success fa-2x me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Buy Alert</h6>
+                                <p class="mb-0 text-muted">Triggered when stocks drop 2.0% or more</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-arrow-up text-danger fa-2x me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Sell Alert</h6>
+                                <p class="mb-0 text-muted">Triggered when stocks rise 3.0% or more</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleBtn');
+    const testBtn = document.getElementById('testBtn');
+    const summaryBtn = document.getElementById('summaryBtn');
+
+    toggleBtn.addEventListener('click', function() {
+        const isActive = this.textContent.trim().startsWith('Stop');
+        const endpoint = isActive ? '/api/stop_monitoring' : '/api/start_monitoring';
+        
+        fetch(endpoint, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+    });
+
+    testBtn.addEventListener('click', function() {
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testing...';
+        
+        fetch('/api/test_alert', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Test completed successfully!\n' + data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during testing');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-vial me-1"></i>Test Alert';
+            });
+    });
+
+    summaryBtn.addEventListener('click', function() {
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
+        
+        fetch('/api/send_summary', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Daily summary sent successfully!');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending summary');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-envelope me-1"></i>Send Summary';
+            });
+    });
+
+    // Auto-refresh status every 30 seconds
+    setInterval(function() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.last_check_time) {
+                    document.getElementById('lastCheck').textContent = 
+                        new Date(data.last_check_time).toLocaleString();
+                }
+            })
+            .catch(error => console.error('Status update error:', error));
+    }, 30000);
+});
+</script>
+{% endblock %}

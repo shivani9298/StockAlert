@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Stock Alert System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Configuration Settings
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Email Configuration -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>Email Configuration
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email_address" class="form-label">Your Email Address *</label>
+                                        <input type="email" class="form-control" id="email_address" name="email_address" 
+                                               value="{{ settings.email_address }}" required>
+                                        <div class="form-text">The email address that will send alerts</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="recipient_email" class="form-label">Recipient Email *</label>
+                                        <input type="email" class="form-control" id="recipient_email" name="recipient_email" 
+                                               value="{{ settings.recipient_email }}" required>
+                                        <div class="form-text">Where to send the alerts</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email_password" class="form-label">Email App Password *</label>
+                                        <input type="password" class="form-control" id="email_password" name="email_password" 
+                                               value="{{ settings.email_password }}" required>
+                                        <div class="form-text">
+                                            For Gmail: <a href="https://support.google.com/accounts/answer/185833" target="_blank">Generate App Password</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="smtp_server" class="form-label">SMTP Server</label>
+                                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                                               value="{{ settings.smtp_server }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="smtp_port" class="form-label">SMTP Port</label>
+                                        <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                                               value="{{ settings.smtp_port }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Thresholds -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-bell me-2"></i>Alert Thresholds
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="buy_threshold" class="form-label">Buy Alert Threshold</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="buy_threshold" 
+                                                   name="buy_threshold" value="{{ settings.buy_threshold }}">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                        <div class="form-text">Negative value. Alert when stock drops this much</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="sell_threshold" class="form-label">Sell Alert Threshold</label>
+                                        <div class="input-group">
+                                            <input type="number" step="0.1" class="form-control" id="sell_threshold" 
+                                                   name="sell_threshold" value="{{ settings.sell_threshold }}">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                        <div class="form-text">Positive value. Alert when stock rises this much</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="check_interval" class="form-label">Check Interval</label>
+                                        <div class="input-group">
+                                            <input type="number" min="1" class="form-control" id="check_interval" 
+                                                   name="check_interval" value="{{ settings.check_interval }}">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <div class="form-text">How often to check the markets</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Setup Help
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="helpAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="gmailHelp">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapseGmail">
+                                Gmail Setup
+                            </button>
+                        </h2>
+                        <div id="collapseGmail" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>Enable 2-Factor Authentication in your Google Account</li>
+                                    <li>Go to Google Account → Security → App passwords</li>
+                                    <li>Generate an App Password for "Mail"</li>
+                                    <li>Use that 16-character password in the "Email App Password" field</li>
+                                    <li>Use your regular Gmail address in "Your Email Address"</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="thresholdHelp">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapseThreshold">
+                                Alert Thresholds
+                            </button>
+                        </h2>
+                        <div id="collapseThreshold" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Buy Alert:</strong> Use negative values (e.g., -2.0). You'll get alerted when stocks drop by this percentage or more.</p>
+                                <p><strong>Sell Alert:</strong> Use positive values (e.g., 3.0). You'll get alerted when stocks rise by this percentage or more.</p>
+                                <p><strong>Example:</strong> With -2.0% buy and 3.0% sell, you'll be notified when stocks drop 2% (good buying opportunity) or rise 3% (consider taking profits).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
